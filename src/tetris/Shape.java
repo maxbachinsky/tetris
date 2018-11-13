@@ -49,10 +49,10 @@ private void setY(int index, int y) {
 	
 }
 
-private int x(int index) {
+public int x(int index) {
 	return coords[index][0];
 }
-private int y(int index) {
+public int y(int index) {
 	return coords[index][1];
 }
 
