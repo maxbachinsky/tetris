@@ -131,7 +131,6 @@ public class Board extends JPanel implements ActionListener {
 		}
 		
 	}
-	helllo
 	
 	
 }
