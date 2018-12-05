@@ -59,23 +59,33 @@ public class Board extends JPanel implements ActionListener {
 	
 	private void pieceDropped() {
 		for (int i=0; i<4; i++) {
-			int x = curX +curPiece.x(i);
+			int x = curX + curPiece.x(i);
 			int y = curY - curPiece.y(i);
 			board[y * BOARD_WIDTH + x] = curPiece.getShape();
 		}
+		
+		removeFullLines();
 		
 		if (!isFallingFinished) {
 			newPiece();
 		}
 	}
-	
+		
 	public void newPiece() {
 		curPiece.setRandomShape();
 		curX= BOARD_WIDTH /2 +1;
 		curY = BOARD_HEIGHT - 1 + curPiece.minY();
+		
+		if (!tryMove(curPiece, curX, curY-1)) {
+			curPiece.setShape(Tetrominos.noShape);
+			timer.stop();
+			isStarted = false;
+			statusBar.setText("Game Over");
+		}
 	}
 	
 	private void oneLineDown () {
+		if (!tryMove(curPiece, curX, curY-1))
 		pieceDropped();
 	}
 	@Override
@@ -124,7 +134,7 @@ public class Board extends JPanel implements ActionListener {
 		if (curPiece.getShape() != Tetrominos.noShape) {
 			for (int i = 0; i < 4; ++i) {
 				int x = curX + curPiece.x(i);
-				int y = curY + curPiece.y(i);
+				int y = curY - curPiece.y(i);
 				drawSquare(g, x*squareWidth(), boardTop + (BOARD_HEIGHT - y - 1) *squareHeight(),curPiece.getShape()); 
 						
 			}
@@ -132,5 +142,105 @@ public class Board extends JPanel implements ActionListener {
 		
 	}
 	
+	public void start() {
+		if (isPaused)
+			return;
+		
+		isStarted = true;
+		isFallingFinished = false;
+		numLinesRemoved = 0;
+		clearBoard();
+		newPiece();
+		timer.start();
+		
+	}
 	
+	public void pause() {
+		if (!isStarted)
+			return;
+		
+		isPaused = !isPaused;
+		
+		if (isPaused) {
+			timer.stop();
+			statusBar.setText("Paused");
+			
+		} else {
+			timer.start();
+			statusBar.setText(String.valueOf(numLinesRemoved));
+		}
+		
+		repaint();
+		
+		
+	}
+	
+	private boolean tryMove(Shape newPiece, int newX, int newY) {
+		for (int i = 0; i < 4; ++i) {
+			int x = newX + newPiece.x(i);
+			int y = newY - newPiece.y(i);
+			
+			if (x < 0 || x >= BOARD_WIDTH || y < 0 || y >= BOARD_HEIGHT)
+				return false;
+			
+			if (shapeAt(x, y) != Tetrominos.noShape)
+				return false;
+		}
+		
+		curPiece = newPiece;
+		curX = newX;
+		curY = newY;
+		repaint();
+		
+		return true;
+	}
+	
+	private void removeFullLines() {
+		int numFullLines=0;
+		
+		for (int i = BOARD_HEIGHT - 1; i >=0; --i) {
+			
+			boolean lineIsFull=true;
+			
+			for (int j = 0; j < BOARD_WIDTH; ++j) {
+				if (shapeAt(j, i) == Tetrominos.noShape) {
+					lineIsFull=false;
+					break;
+				}
+			}
+			
+			if (lineIsFull) {
+				++numFullLines;
+				
+				for (int k = i; k < BOARD_HEIGHT - 1; ++k) {
+					for (int j =0; j <BOARD_WIDTH; ++j) {
+						board[k * BOARD_WIDTH + j] = shapeAt(k, k +1);
+					}
+				}
+			}
+			
+			if (numFullLines > 0) {
+				numLinesRemoved += numFullLines;
+				statusBar.setText(String.valueOf(numLinesRemoved));
+				isFallingFinished = true;
+				curPiece.setShape(Tetrominos.noShape);
+				repaint();
+				
+			}
+		}
+	}
+	
+	private void dropDown() {
+		int newY = curY;
+		
+		while (newY > 0) {
+			if (!tryMove(curPiece, curX, newY-1))
+				break;
+			
+			--newY;
+		}
+		
+		pieceDropped();
+	}
+
 }
