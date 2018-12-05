@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,6 +37,7 @@ public class Board extends JPanel implements ActionListener {
 		statusBar = parent.getStatusBar();
 		board = new Tetrominos[BOARD_WIDTH * BOARD_HEIGHT];
 		clearBoard();
+		addKeyListener(new MyTetrisAdapter());
 		
 	}
 	
@@ -214,7 +217,7 @@ public class Board extends JPanel implements ActionListener {
 				
 				for (int k = i; k < BOARD_HEIGHT - 1; ++k) {
 					for (int j =0; j <BOARD_WIDTH; ++j) {
-						board[k * BOARD_WIDTH + j] = shapeAt(k, k +1);
+						board[k * BOARD_WIDTH + j] = shapeAt(j, k +1);
 					}
 				}
 			}
@@ -243,4 +246,44 @@ public class Board extends JPanel implements ActionListener {
 		pieceDropped();
 	}
 
+	class MyTetrisAdapter extends KeyAdapter{
+		@Override
+		public void keyPressed(KeyEvent ke) {
+			if (!isStarted || curPiece.getShape()== Tetrominos.noShape) {
+				return;
+			}
+			
+			int keyCode= ke.getKeyCode();
+			
+			if (keyCode =='p' || keyCode =='P')
+				pause();
+			
+			if (isPaused)
+				return;
+			
+			switch(keyCode){
+				case KeyEvent.VK_LEFT:
+					tryMove(curPiece, curX-1, curY);
+					break;
+				case KeyEvent.VK_RIGHT:
+					tryMove(curPiece,curX+1,curY);
+					break;
+					
+				case KeyEvent.VK_DOWN:
+					tryMove(curPiece.rotateRight(),curX,curY);
+					break;
+				case KeyEvent.VK_UP:
+					tryMove(curPiece.rotateLeft(),curX,curY);
+					break;
+				case KeyEvent.VK_SPACE	:
+					dropDown();
+				case 'd':
+					oneLineDown();
+				case 'D':
+					oneLineDown();
+					
+			}
+			
+		}
+	}
 }

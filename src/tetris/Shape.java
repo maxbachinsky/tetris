@@ -85,4 +85,36 @@ public int minY() {
 	
 	return m;
 }
+
+public Shape rotateLeft() {
+	if (pieceShape== Tetrominos.squareShape)
+		return this;
+	
+	Shape result = new Shape ();
+	result.pieceShape = pieceShape;
+	
+	for (int i =0; i < 4; i++) {
+		result.setX(i,  y(i));
+		result.setY(i, -x(i));
+	}
+	
+	return result;
+	
+}
+
+public Shape rotateRight() {
+	if (pieceShape== Tetrominos.squareShape)
+		return this;
+	
+	Shape result = new Shape ();
+	result.pieceShape = pieceShape;
+	
+	for (int i =0; i < 4; i++) {
+		result.setX(i,  -y(i));
+		result.setY(i, x(i));
+	}
+	
+	return result;
+	
+}
 }
